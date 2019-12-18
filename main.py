@@ -37,29 +37,38 @@ class MutableTypesComparer:
         self.equal = []
 
     def compare(self):
-        if self.name_tag == "main dict":
-            print("Instance Type: {}".format(type(self.first_data).__name__))
-        self._compare_data()
-        self.comparer = Comparer(self.second_data, self.first_data)
-        if self.simplify_second_comparison:
-            self._compare_second_to_first()
+        if self.first_data == self.second_data:
+            print("The content is the same")
+            self.iteration_amount += 1
         else:
+            if self.name_tag == "main dict":
+                print("Instance Type: {}".format(type(self.first_data).__name__))
             self._compare_data()
-        self._print_results()
+            self.comparer = Comparer(self.second_data, self.first_data)
+            if self.simplify_second_comparison:
+                self._compare_second_to_first()
+            else:
+                self._compare_data()
+            self._print_results()
         return self.differences_amount, self.iteration_amount
 
     def _compare_data(self):
         for index, element in enumerate(self.comparer.first):
             is_different = False
-            if self.is_dict:
-                is_different = self._compare_dict(element)
-            elif self.is_list:
-                is_different = self._compare_list(element, index)
-            elif self.is_set:
-                is_different = self._compare_set(element)
-            if is_different:
-                self.differences_amount += 1
-            self.iteration_amount += 1
+            if isinstance(self.comparer.first, type(self.comparer.second)):
+                if self.is_dict:
+                    is_different = self._compare_dict(element)
+                elif self.is_list:
+                    is_different = self._compare_list(index)
+                elif self.is_set:
+                    is_different = self._compare_set(element)
+                if is_different:
+                    self.differences_amount += 1
+                    self.iteration_amount += 1
+            else:
+                print("Given data's are inconsistent")
+                print(self.comparer.first)
+                print(self.comparer.second)
 
     def _compare_second_to_first(self):
         for element in self.second_data:
@@ -97,19 +106,19 @@ class MutableTypesComparer:
                     is_different = True
         return is_different
 
-    def _compare_list(self, element, index, is_different=False):
+    def _compare_list(self, index, is_different=False):
         try:
-            if self.is_length_different(self.comparer.first, self.comparer.second, element):
+            if self.is_length_different(self.comparer.first, self.comparer.second, str(index)):
                 is_different = True
-            if not self._is_type_different(element, self.comparer.second[index], self.comparer.first[element]):
-                if not self._proceed_if_modular(element, self.comparer.second[index], str(index)):
-                    if type(element) not in [bool, int, float, None] and \
-                            self.is_length_different(element, self.comparer.second[index], element):
-                        is_different = True
-                    if self._is_different(element, self.comparer.second[index], self.comparer.first[element]):
-                        is_different = True
-            else:
-                is_different = True
+            if not self._proceed_if_modular(self.comparer.first[index], self.comparer.second[index], str(index)):
+                if type(self.comparer.first[index]) not in [bool, int, float, None] and \
+                        self.is_length_different(self.comparer.first[index], self.comparer.second[index], str(index)):
+                    is_different = True
+                if not self._is_type_different(self.comparer.first[index], self.comparer.second[index],
+                                               str(index)):
+                    is_different = True
+                if self._is_different(self.comparer.first[index], self.comparer.second[index], str(index)):
+                    is_different = True
         except IndexError:
             pass
         return is_different
@@ -162,7 +171,16 @@ class MutableTypesComparer:
     def _proceed_if_modular(self, element, second_element, name):
         proceeded = False
         if type(element) in [list, dict]:
-            print(self.grid + "Comparing {} element '{}'...".format(type(element).__name__, name))
+            parent_type = type(self.comparer.first).__name__
+            if parent_type == "list":
+                name = "index {}".format(name)
+            else:
+                name = "key: '{}'".format(name)
+            print(self.grid + "Comparing {} element which is {}. Comparing {}...".format(
+                parent_type,
+                type(element).__name__,
+                name
+            ))
             name = "list" if type(element) == list else name
             differences_amount, iteration_amount = MutableTypesComparer(
                 element,
@@ -182,7 +200,7 @@ class MutableTypesComparer:
     def _print_results(self):
         if self.name_tag != "list":
             print(self.grid + '-' * 3)
-            print(self.grid + "\'" + self.name_tag + "\' result:")
+            print(self.grid + self.name_tag + " result:")
             if any([self.not_in, self.not_equal]) or self.differences_amount > 0:
                 for element in self.not_in + self.not_equal:
                     print(element)
