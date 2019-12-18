@@ -16,13 +16,15 @@ class MutableTypesComparer:
                  check_types=False,
                  debug=False,
                  grid="",
-                 simplify_second_comparison=True
+                 simplify_second_comparison=True,
+                 avoid_logging_same_content=True,
                  ):
         self.first_data = first_data
         self.second_data = second_data
         self.comparer = Comparer(self.first_data, self.second_data)
         self.name_tag = _name_tag
         self.simplify_second_comparison = simplify_second_comparison
+        self.avoid_logging_same_content = avoid_logging_same_content
         self.debug = debug
         self.is_dict = isinstance(first_data, dict)
         self.is_list = isinstance(first_data, list)
@@ -37,7 +39,7 @@ class MutableTypesComparer:
         self.equal = []
 
     def compare(self):
-        if self.first_data == self.second_data:
+        if self.avoid_logging_same_content and self.first_data == self.second_data:
             print("The content is the same")
             self.iteration_amount += 1
         else:
