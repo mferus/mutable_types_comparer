@@ -13,7 +13,7 @@ class MutableTypesComparer:
                  second_data,
                  _name_tag="main dict",
                  check_length=True,
-                 check_types=False,
+                 check_types=True,
                  debug=False,
                  grid="",
                  simplify_second_comparison=True,
@@ -40,7 +40,7 @@ class MutableTypesComparer:
 
     def compare(self):
         if self.avoid_logging_same_content and self.first_data == self.second_data:
-            print("The content is the same")
+            print(self.grid + "The content is the same")
             self.iteration_amount += 1
         else:
             if self.name_tag == "main dict":
@@ -68,9 +68,9 @@ class MutableTypesComparer:
                     self.differences_amount += 1
                     self.iteration_amount += 1
             else:
-                print("Given data's are inconsistent")
-                print(self.comparer.first)
-                print(self.comparer.second)
+                print(self.grid + "Given data is inconsistent")
+                print(self.grid + self.comparer.first)
+                print(self.grid + self.comparer.second)
 
     def _compare_second_to_first(self):
         for element in self.second_data:
@@ -116,6 +116,8 @@ class MutableTypesComparer:
                 if type(self.comparer.first[index]) not in [bool, int, float, None] and \
                         self.is_length_different(self.comparer.first[index], self.comparer.second[index], str(index)):
                     is_different = True
+                if self._is_element_in_list(self.comparer.first[index], self.comparer.second):
+                    is_different = True
                 if not self._is_type_different(self.comparer.first[index], self.comparer.second[index],
                                                str(index)):
                     is_different = True
@@ -146,6 +148,14 @@ class MutableTypesComparer:
         if element not in self.comparer.second:
             self.not_in.append(
                 self.grid + 'element {:^64} not in dict: {:^158}'.format(element, self.comparer.first[element]))
+            is_different = True
+        return is_different
+
+    def _is_element_in_list(self, element, index):
+        is_different = False
+        if element not in self.comparer.second:
+            self.not_in.append(
+                self.grid + 'element {:^64} not in list: {:^158}'.format(element, index))
             is_different = True
         return is_different
 
@@ -200,20 +210,19 @@ class MutableTypesComparer:
         return proceeded
 
     def _print_results(self):
-        if self.name_tag != "list":
-            print(self.grid + '-' * 3)
-            print(self.grid + self.name_tag + " result:")
-            if any([self.not_in, self.not_equal]) or self.differences_amount > 0:
-                for element in self.not_in + self.not_equal:
-                    print(element)
-                print(self.grid + 'Differences amount: {}'.format(self.differences_amount))
-            elif self.equal:
-                print(self.grid + 'The content is the same')
-            if self.debug:
-                for element in self.equal:
-                    print(element)
-            print(self.grid + 'Iteration amount: {}'.format(self.iteration_amount))
-            print(self.grid + '-' * 3)
+        print(self.grid + '-' * 3)
+        print(self.grid + self.name_tag + " result:")
+        if any([self.not_in, self.not_equal]) or self.differences_amount > 0:
+            for element in self.not_in + self.not_equal:
+                print(element)
+            print(self.grid + 'Differences amount: {}'.format(self.differences_amount))
+        elif self.equal:
+            print(self.grid + 'The content is the same')
+        if self.debug:
+            for element in self.equal:
+                print(element)
+        print(self.grid + 'Iteration amount: {}'.format(self.iteration_amount))
+        print(self.grid + '-' * 3)
 
 
 if __name__ == '__main__':
@@ -221,5 +230,5 @@ if __name__ == '__main__':
     a = {}
     b = {}
 
-    comparer = MutableTypesComparer(a, b, check_types=True)
+    comparer = MutableTypesComparer(a, b)
     comparer.compare()
