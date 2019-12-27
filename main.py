@@ -40,7 +40,7 @@ class MutableTypesComparer:
 
     def compare(self):
         if self.avoid_logging_same_content and self.first_data == self.second_data:
-            print(self.grid + "The content is the same")
+            print(self.grid + "Content of {} is identical".format(self.name_tag))
             self.iteration_amount += 1
         else:
             if self.name_tag == "main dict":
@@ -87,20 +87,32 @@ class MutableTypesComparer:
     def _is_element_in_first_dict(self, element):
         is_different = False
         if element not in self.first_data:
-            self.not_in.append(
-                self.grid + 'element {:^64} not in first dict: {:^154}'.format(element, self.second_data[element]))
+            self.not_in.append(self._get_print_message(element, 'not in first dict', self.second_data[element]))
             is_different = True
         return is_different
+
+    def _get_print_message(self, *args):
+        if len(args) == 2:
+            template = "element {:^64}: {}"
+        elif len(args) == 3:
+            template = "element {:^64} {:^23} {}"
+        elif len(args) == 5:
+            template = "element {:^64} {:^23} {:^64} {} {:^64}"
+        else:
+            raise Exception("Amount of arguments ({}) is inadequate.".format(len(args)))
+        return self.grid + template.format(*args)
 
     def _compare_dict(self, element, is_different=False):
         if self._is_element_in_dict(element):
             is_different = True
         else:
-            if not self._proceed_if_modular(self.comparer.first[element], self.comparer.second[element], element):
+            if not self._proceed_if_mutable(self.comparer.first[element], self.comparer.second[element], element):
                 if not self._is_type_different(self.comparer.first[element], self.comparer.second[element], element):
                     if self.comparer.second[element] and \
                         type(self.comparer.first[element]) not in [bool, int, float, None] and \
-                            self.is_length_different(self.comparer.first[element], self.comparer.second[element], element):
+                            self.is_length_different(
+                                self.comparer.first[element], self.comparer.second[element], element
+                            ):
                         is_different = True
                     if self._is_different(self.comparer.first[element], self.comparer.second[element], element):
                         is_different = True
@@ -112,7 +124,7 @@ class MutableTypesComparer:
         try:
             if self.is_length_different(self.comparer.first, self.comparer.second, str(index)):
                 is_different = True
-            if not self._proceed_if_modular(self.comparer.first[index], self.comparer.second[index], str(index)):
+            if not self._proceed_if_mutable(self.comparer.first[index], self.comparer.second[index], str(index)):
                 if type(self.comparer.first[index]) not in [bool, int, float, None] and \
                         self.is_length_different(self.comparer.first[index], self.comparer.second[index], str(index)):
                     is_different = True
@@ -129,33 +141,38 @@ class MutableTypesComparer:
 
     def _compare_set(self, element, is_different=False):
         if element not in self.comparer.second:
-            self.not_equal.append(
-                self.grid + 'element not in set: {:^154}'.format(element))
+            self.not_equal.append(self._get_print_message("not in set", element))
             is_different = True
         return is_different
 
     def _is_type_different(self, element_a, element_b, element_name):
         is_different = False
         if type(element_a) != type(element_b):
-            self.not_equal.append(
-                self.grid + 'element {:^64} type not same: {:^64} != {:^64}'.format(
-                    element_name, type(element_a).__name__, type(element_b).__name__))
+            self.not_equal.append(self._get_print_message(
+                element_name,
+                "type not same",
+                type(element_a).__name__,
+                "!=",
+                type(element_b).__name__)
+            )
             is_different = True
         return is_different
 
     def _is_element_in_dict(self, element):
         is_different = False
         if element not in self.comparer.second:
-            self.not_in.append(
-                self.grid + 'element {:^64} not in dict: {:^158}'.format(element, self.comparer.first[element]))
+            self.not_in.append(self._get_print_message(
+                element,
+                "not in dict",
+                self.comparer.first[element])
+            )
             is_different = True
         return is_different
 
     def _is_element_in_list(self, element, index):
         is_different = False
         if element not in self.comparer.second:
-            self.not_in.append(
-                self.grid + 'element {:^64} not in list: {:^158}'.format(element, index))
+            self.not_in.append(self._get_print_message(element, "not in list", index))
             is_different = True
         return is_different
 
@@ -164,23 +181,20 @@ class MutableTypesComparer:
         len_b = len(element_b)
         is_different = False
         if len_a != len_b and self.check_length:
-            self.not_equal.append(self.grid + 'element {:^64} has not the same length: {:^70} != {:^64}'.format(
-                element_name, len_a, len_b))
+            self.not_equal.append(self._get_print_message(element_name, "has not the same length", len_a, "!=", len_b))
             is_different = True
         return is_different
 
     def _is_different(self, element_a, element_b, element_name):
         is_different = False
         if element_a != element_b:
-            self.not_equal.append(self.grid + 'element {:^64} not same: {:^64} != {:^64}'.format(
-                element_name, element_a, element_b))
+            self.not_equal.append(self._get_print_message(element_name, "not same", element_a, "!=", element_b))
             is_different = True
         else:
-            self.equal.append(self.grid + 'element {:^64} same: {:^64} == {:^64}'.format(
-                element_name, element_a, element_b))
+            self.equal.append(self._get_print_message(element_name, "same", element_a, "==", element_b))
         return is_different
 
-    def _proceed_if_modular(self, element, second_element, name):
+    def _proceed_if_mutable(self, element, second_element, name):
         proceeded = False
         if type(element) in [list, dict]:
             parent_type = type(self.comparer.first).__name__
@@ -217,7 +231,7 @@ class MutableTypesComparer:
                 print(element)
             print(self.grid + 'Differences amount: {}'.format(self.differences_amount))
         elif self.equal:
-            print(self.grid + 'The content is the same')
+            print(self.grid + 'Content is identical')
         if self.debug:
             for element in self.equal:
                 print(element)
