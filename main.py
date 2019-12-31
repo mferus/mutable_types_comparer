@@ -93,9 +93,9 @@ class MutableTypesComparer:
 
     def _get_print_message(self, *args):
         if len(args) == 2:
-            template = "element {:^64}: {}"
+            template = "element {:^64} {:^156}"
         elif len(args) == 3:
-            template = "element {:^64} {:^23} {}"
+            template = "element {:^64} {:^23} {:^132}"
         elif len(args) == 5:
             template = "element {:^64} {:^23} {:^64} {} {:^64}"
         else:
