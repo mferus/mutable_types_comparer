@@ -66,7 +66,7 @@ class MutableTypesComparer:
                     is_different = self._compare_set(element)
                 if is_different:
                     self.differences_amount += 1
-                    self.iteration_amount += 1
+                self.iteration_amount += 1
             else:
                 print(self.grid + "Given data is inconsistent")
                 print(self.grid + self.comparer.first)
