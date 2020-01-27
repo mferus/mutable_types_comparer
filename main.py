@@ -43,34 +43,34 @@ class MutableTypesComparer:
             print(self.grid + "Content of {} is identical".format(self.name_tag))
             self.iteration_amount += 1
         else:
-            if self.name_tag == "main dict":
-                print("Instance Type: {}".format(type(self.first_data).__name__))
-            self._compare_data()
-            self.comparer = Comparer(self.second_data, self.first_data)
-            if self.simplify_second_comparison:
-                self._compare_second_to_first()
-            else:
+            if isinstance(self.comparer.first, type(self.comparer.second)):
+                if self.name_tag == "main dict":
+                    print("Instance Type: {}".format(type(self.first_data).__name__))
                 self._compare_data()
-            self._print_results()
+                self.comparer = Comparer(self.second_data, self.first_data)
+                if self.simplify_second_comparison:
+                    self._compare_second_to_first()
+                else:
+                    self._compare_data()
+                self._print_results()
+            else:
+                print(self.grid + "Given data is inconsistent")
+                print(self.grid + "First: " + str(self.comparer.first))
+                print(self.grid + "Second: " + str(self.comparer.second))
         return self.differences_amount, self.iteration_amount
 
     def _compare_data(self):
         for index, element in enumerate(self.comparer.first):
             is_different = False
-            if isinstance(self.comparer.first, type(self.comparer.second)):
-                if self.is_dict:
-                    is_different = self._compare_dict(element)
-                elif self.is_list:
-                    is_different = self._compare_list(index)
-                elif self.is_set:
-                    is_different = self._compare_set(element)
-                if is_different:
-                    self.differences_amount += 1
-                self.iteration_amount += 1
-            else:
-                print(self.grid + "Given data is inconsistent")
-                print(self.grid + self.comparer.first)
-                print(self.grid + self.comparer.second)
+            if self.is_dict:
+                is_different = self._compare_dict(element)
+            elif self.is_list:
+                is_different = self._compare_list(index)
+            elif self.is_set:
+                is_different = self._compare_set(element)
+            if is_different:
+                self.differences_amount += 1
+            self.iteration_amount += 1
 
     def _compare_second_to_first(self):
         for element in self.second_data:
@@ -100,6 +100,7 @@ class MutableTypesComparer:
             template = "element {:^64} {:^23} {:^64} {} {:^64}"
         else:
             raise Exception("Amount of arguments ({}) is inadequate.".format(len(args)))
+        args = [str(arg) for arg in args]
         return self.grid + template.format(*args)
 
     def _compare_dict(self, element, is_different=False):
