@@ -46,12 +46,22 @@ class MutableTypesComparer:
             if isinstance(self.comparer.first, type(self.comparer.second)):
                 if self.name_tag == "main dict":
                     print("Instance Type: {}".format(type(self.first_data).__name__))
-                self._compare_data()
-                self.comparer = Comparer(self.second_data, self.first_data)
-                if self.simplify_second_comparison:
-                    self._compare_second_to_first()
+
+                if self.comparer.second and not self.comparer.first:
+                    print(self.grid + "Content of first {} is empty".format(self.name_tag))
+                    self.differences_amount += 1
+                    self.iteration_amount += 1
+                elif self.comparer.first and not self.comparer.second:
+                    print(self.grid + "Content of second {} is empty".format(self.name_tag))
+                    self.differences_amount += 1
+                    self.iteration_amount += 1
                 else:
                     self._compare_data()
+                    self.comparer = Comparer(self.second_data, self.first_data)
+                    if self.simplify_second_comparison:
+                        self._compare_second_to_first()
+                    else:
+                        self._compare_data()
                 self._print_results()
             else:
                 print(self.grid + "Given data is inconsistent")
@@ -60,20 +70,8 @@ class MutableTypesComparer:
         return self.differences_amount, self.iteration_amount
 
     def _compare_data(self):
-        is_different = False
-
-        if self.comparer.second and not self.comparer.first:
-            print(self.grid + "First {} is empty".format(self.name_tag))
-            iterator = []
-            is_different = True
-        elif self.comparer.first and not self.comparer.second:
-            print(self.grid + "Second {} is empty".format(self.name_tag))
-            iterator = []
-            is_different = True
-        else:
-            iterator = self.comparer.first
-
-        for index, element in enumerate(iterator):
+        for index, element in enumerate(self.comparer.first):
+            is_different = False
 
             if self.is_dict:
                 is_different = self._compare_dict(element)
