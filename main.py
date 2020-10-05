@@ -60,8 +60,21 @@ class MutableTypesComparer:
         return self.differences_amount, self.iteration_amount
 
     def _compare_data(self):
-        for index, element in enumerate(self.comparer.first):
-            is_different = False
+        is_different = False
+
+        if self.comparer.second and not self.comparer.first:
+            print(self.grid + "First {} is empty".format(self.name_tag))
+            iterator = []
+            is_different = True
+        elif self.comparer.first and not self.comparer.second:
+            print(self.grid + "Second {} is empty".format(self.name_tag))
+            iterator = []
+            is_different = True
+        else:
+            iterator = self.comparer.first
+
+        for index, element in enumerate(iterator):
+
             if self.is_dict:
                 is_different = self._compare_dict(element)
             elif self.is_list:
@@ -217,7 +230,8 @@ class MutableTypesComparer:
                 check_length=self.check_length,
                 check_types=self.check_types,
                 grid=self.grid + "    ",
-                simplify_second_comparison=self.simplify_second_comparison
+                simplify_second_comparison=self.simplify_second_comparison,
+                avoid_logging_same_content=self.avoid_logging_same_content,
             ).compare()
             self.differences_amount += differences_amount
             self.iteration_amount += iteration_amount
