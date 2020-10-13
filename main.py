@@ -6,6 +6,9 @@ class Comparer:
         self.first = first_data
         self.second = second_data
 
+    def swap(self):
+        self.first, self.second = self.second, self.first
+
 
 class MutableTypesComparer:
     def __init__(self,
@@ -19,9 +22,7 @@ class MutableTypesComparer:
                  simplify_second_comparison=True,
                  avoid_logging_same_content=True,
                  ):
-        self.first_data = first_data
-        self.second_data = second_data
-        self.comparer = Comparer(self.first_data, self.second_data)
+        self.comparer = Comparer(first_data, second_data)
         self.name_tag = _name_tag
         self.simplify_second_comparison = simplify_second_comparison
         self.avoid_logging_same_content = avoid_logging_same_content
@@ -39,13 +40,13 @@ class MutableTypesComparer:
         self.equal = []
 
     def compare(self) -> (int, int):
-        if self.avoid_logging_same_content and self.first_data == self.second_data:
+        if self.avoid_logging_same_content and self.comparer.first == self.comparer.second:
             print(self.grid + "Content of {} is identical".format(self.name_tag))
             self.iteration_amount += 1
         else:
             if isinstance(self.comparer.first, type(self.comparer.second)):
                 if self.name_tag == "main dict":
-                    print("Instance Type: {}".format(type(self.first_data).__name__))
+                    print("Instance Type: {}".format(type(self.comparer.first).__name__))
 
                 if self.comparer.second and not self.comparer.first:
                     print(self.grid + "Content of first {} is empty".format(self.name_tag))
@@ -57,7 +58,8 @@ class MutableTypesComparer:
                     self.iteration_amount += 1
                 else:
                     self._compare_data()
-                    self.comparer = Comparer(self.second_data, self.first_data)
+
+                    self.comparer.swap()
                     if self.simplify_second_comparison:
                         self._compare_second_to_first()
                     else:
@@ -84,7 +86,7 @@ class MutableTypesComparer:
             self.iteration_amount += 1
 
     def _compare_second_to_first(self):
-        for element in self.second_data:
+        for element in self.comparer.second:
             is_different = False
             if self.is_dict:
                 if self._is_element_in_first_dict(element):
@@ -97,8 +99,8 @@ class MutableTypesComparer:
 
     def _is_element_in_first_dict(self, element) -> bool:
         is_different = False
-        if element not in self.first_data:
-            self.not_in.append(self._get_print_message(element, 'not in first dict', self.second_data[element]))
+        if element not in self.comparer.first:
+            self.not_in.append(self._get_print_message(element, 'not in first dict', self.comparer.second[element]))
             is_different = True
         return is_different
 
