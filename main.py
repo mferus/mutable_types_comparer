@@ -86,7 +86,7 @@ class MutableTypesComparer:
             self.iteration_amount += 1
 
     def _compare_second_to_first(self):
-        for element in self.comparer.second:
+        for element in self.comparer.first:
             is_different = False
             if self.is_dict:
                 if self._is_element_in_first_dict(element):
