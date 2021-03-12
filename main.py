@@ -11,11 +11,12 @@ class Comparer:
 
 
 class MutableTypesComparer:
+    _name_tag = 'complete'
+
     def __init__(
         self,
         first_data,
         second_data,
-        _name_tag="complete",
         check_length=False,
         check_types=True,
         debug=False,
@@ -24,7 +25,6 @@ class MutableTypesComparer:
         avoid_logging_same_content=True,
     ):
         self.comparer = Comparer(first_data, second_data)
-        self.name_tag = _name_tag
         self.simplify_second_comparison = simplify_second_comparison
         self.avoid_logging_same_content = avoid_logging_same_content
         self.debug = debug
@@ -45,25 +45,25 @@ class MutableTypesComparer:
             self.avoid_logging_same_content
             and self.comparer.first == self.comparer.second
         ):
-            print(self.grid + "Content of {} is identical".format(self.name_tag))
+            print(self.grid + "Content of {} is identical".format(self._name_tag))
             self.iteration_amount += 1
         else:
             if isinstance(self.comparer.first, type(self.comparer.second)):
-                if self.name_tag == "complete":
+                if self._name_tag == comparer.__class__._name_tag:
                     print(
-                        "Instance Type: {}".format(type(self.comparer.first).__name__)
+                        "Instance Types: {}".format(type(self.comparer.first).__name__)
                     )
 
                 if self.comparer.second and not self.comparer.first:
                     print(
-                        self.grid + "Content of first {} is empty".format(self.name_tag)
+                        self.grid + "Content of first {} is empty".format(self._name_tag)
                     )
                     self.differences_amount += 1
                     self.iteration_amount += 1
                 elif self.comparer.first and not self.comparer.second:
                     print(
                         self.grid
-                        + "Content of second {} is empty".format(self.name_tag)
+                        + "Content of second {} is empty".format(self._name_tag)
                     )
                     self.differences_amount += 1
                     self.iteration_amount += 1
@@ -72,7 +72,7 @@ class MutableTypesComparer:
 
                     self.comparer.swap()
                     if self.simplify_second_comparison:
-                        self._compare_second_to_first()
+                        self._simply_compare_data()
                     else:
                         self._compare_data()
                 self._print_results()
@@ -96,14 +96,12 @@ class MutableTypesComparer:
                 self.differences_amount += 1
             self.iteration_amount += 1
 
-    def _compare_second_to_first(self):
+    def _simply_compare_data(self):
         for element in self.comparer.first:
             is_different = False
             if self.is_dict:
                 if self._is_element_in_first_dict(element):
                     is_different = True
-            elif self.is_set:
-                is_different = self._compare_set(element)
             if is_different:
                 self.differences_amount += 1
             self.iteration_amount += 1
@@ -283,17 +281,19 @@ class MutableTypesComparer:
                 )
             )
             name = "list" if type(element) == list else name
-            differences_amount, iteration_amount = MutableTypesComparer(
+            recursive_comparer = MutableTypesComparer(
                 element,
                 second_element,
-                _name_tag=name,
                 debug=self.debug,
                 check_length=self.check_length,
                 check_types=self.check_types,
                 grid=self.grid + "    ",
                 simplify_second_comparison=self.simplify_second_comparison,
                 avoid_logging_same_content=self.avoid_logging_same_content,
-            ).compare()
+            )
+            recursive_comparer._name_tag = name
+            differences_amount, iteration_amount = recursive_comparer.compare()
+
             self.differences_amount += differences_amount
             self.iteration_amount += iteration_amount
             proceeded = True
@@ -301,7 +301,7 @@ class MutableTypesComparer:
 
     def _print_results(self):
         print(self.grid + "-" * 3)
-        print(self.grid + self.name_tag + " result:")
+        print(self.grid + self._name_tag + " result:")
         if any([self.not_in, self.not_equal]) or self.differences_amount > 0:
             for element in self.not_in + self.not_equal:
                 print(element)
