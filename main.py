@@ -78,9 +78,13 @@ class MutableTypesComparer:
                 self._print_results()
             else:
                 print(self.grid + "Given data is inconsistent")
-                print(self.grid + "First: " + str(self.comparer.first))
-                print(self.grid + "Second: " + str(self.comparer.second))
+                print(self.grid + f"First: {self.get_type_string(self.comparer.first)}")
+                print(self.grid + f"Second: {self.get_type_string(self.comparer.second)}")
         return self.differences_amount, self.iteration_amount
+
+    @staticmethod
+    def get_type_string(element):
+        return f"{type(element).__name__} - {element}"
 
     def _compare_data(self):
         for index, element in enumerate(self.comparer.first):
