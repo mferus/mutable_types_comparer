@@ -108,10 +108,10 @@ class MutableTypesComparer:
 
     def _is_element_in_first_dict(self, element) -> bool:
         is_different = False
-        if element not in self.comparer.first:
+        if element not in self.comparer.second:
             self.not_in.append(
                 self._get_print_message(
-                    element, "not in first dict", self.comparer.second[element]
+                    element, "not in first dict", repr(self.comparer.first[element])
                 )
             )
             is_different = True
@@ -195,7 +195,7 @@ class MutableTypesComparer:
 
     def _compare_set(self, element, is_different=False) -> bool:
         if element not in self.comparer.second:
-            self.not_equal.append(self._get_print_message("not in set", repr(element)))
+            self.not_equal.append(self._get_print_message("not in second set", repr(element)))
             is_different = True
         return is_different
 
@@ -219,7 +219,7 @@ class MutableTypesComparer:
         if element not in self.comparer.second:
             self.not_in.append(
                 self._get_print_message(
-                    element, "not in dict", repr(self.comparer.first[element])
+                    element, "not in second dict", repr(self.comparer.first[element])
                 )
             )
             is_different = True
@@ -228,7 +228,7 @@ class MutableTypesComparer:
     def _is_element_in_list(self, element, index: str) -> bool:
         is_different = False
         if element not in self.comparer.second:
-            self.not_in.append(self._get_print_message(element, "not in list", index))
+            self.not_in.append(self._get_print_message(element, "not in second list", index))
             is_different = True
         return is_different
 
@@ -254,7 +254,7 @@ class MutableTypesComparer:
         if element_a != element_b:
             self.not_equal.append(
                 self._get_print_message(
-                    element_name, "not same", repr(element_a), "!=", repr(element_b)
+                    element_name, "not the same", repr(element_a), "!=", repr(element_b)
                 )
             )
             is_different = True
